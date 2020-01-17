@@ -11,5 +11,5 @@ go get -u github.com/ryanking13/go-SRT
 ## Testing
 
 ```sh
-go test -failfast
+go test -failfast -v
 ```

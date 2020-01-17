@@ -2,6 +2,7 @@ package srt
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
@@ -64,7 +65,22 @@ func (c *Client) Login(id, pw string) error {
 
 // Logout is used to logout from SRT server
 func (c *Client) Logout() error {
-	return errors.New("Not Implemented")
+	if !c.isLogin {
+		return nil
+	}
+
+	resp, err := c.httpClient.R().
+		Post(srtLogoutURL)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return errors.New("Logout Failed")
+	}
+
+	return nil
 }
 
 // SearchTrain is used to search trains from SRT server
