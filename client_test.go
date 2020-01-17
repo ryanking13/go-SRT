@@ -1,6 +1,7 @@
 package srt_test
 
 import (
+	"os"
 	"testing"
 
 	srt "github.com/ryanking13/go-SRT"
@@ -9,11 +10,35 @@ import (
 func TestSRT(t *testing.T) {
 
 	client := srt.New()
-	
-	t.Run("Login Test", func(t *testing.T) {
-		err := client.Login()
+	// client.SetDebug()
+
+	username := os.Getenv("SRT_USERNAME")
+	password := os.Getenv("SRT_PASSWORD")
+
+	t.Run("Username, Password Check", func(t *testing.T) {
+		if username == "" || password == "" {
+			t.Error("SRT_USERNAME or SRT_PASSWORD not set")
+		}
+	})
+
+	t.Run("Login Success Test", func(t *testing.T) {
+		err := client.Login(username, password)
 		if err != nil {
 			t.Errorf("SRT Login Failed: %s", err.Error())
+		}
+	})
+
+	t.Run("Login Fail Test (ID)", func(t *testing.T) {
+		err := client.Login("deadbeef", password)
+		if err == nil {
+			t.Error("Invalid Login Credential Bypassed (ID)")
+		}
+	})
+
+	t.Run("Login Fail Test (PW)", func(t *testing.T) {
+		err := client.Login(username, "deadbeef")
+		if err == nil {
+			t.Error("Invalid Login Credential Bypassed (PW)")
 		}
 	})
 

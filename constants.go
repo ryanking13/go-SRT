@@ -1,6 +1,9 @@
 package srt
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
 const (
 	srtScheme = "https"
@@ -26,4 +29,15 @@ var (
 		"User-Agent": "Mozilla/5.0 (Linux; Android 5.1.1; LGM-V300K Build/N2G47H) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/39.0.0.0 Mobile Safari/537.36SRT-APP-Android V.1.0.6",
 		"Accept":     "application/json",
 	}
+)
+
+var (
+	regexEmail, _ = regexp.Compile("[^@]+@[^@]+\\.[^@]+")
+	regexPhone, _ = regexp.Compile("(\\d{3})-(\\d{3,4})-(\\d{4})")
+)
+
+const (
+	loginTypeID    = "1"
+	loginTypeEmail = "2"
+	loginTypePhone = "3"
 )
