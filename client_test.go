@@ -2,10 +2,17 @@ package srt_test
 
 import (
 	"os"
+	"time"
+	"fmt"
 	"testing"
 
 	srt "github.com/ryanking13/go-SRT"
 )
+
+func today() string {
+	t := time.Now()
+	return fmt.Sprintf("%d%02d%02d", t.Year(), t.Month(), t.Day())
+}
 
 func TestSRT(t *testing.T) {
 
@@ -43,7 +50,7 @@ func TestSRT(t *testing.T) {
 	})
 
 	t.Run("SearchTrain Test", func(t *testing.T) {
-		err := client.SearchTrain()
+		_, err := client.SearchTrainAll("수서", "부산", today(), "000000")
 		if err != nil {
 			t.Errorf("SRT SearchTrain Failed: %s", err.Error())
 		}

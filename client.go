@@ -2,6 +2,7 @@ package srt
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -83,9 +84,96 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-// SearchTrain is used to search trains from SRT server
-func (c *Client) SearchTrain() error {
-	return errors.New("Not Implemented")
+// SearchTrain is used to search trains from SRT server,
+// SearchTrain returns *only* available seats,
+// if you want to retrieve trains with no seats as well, Use SearchTrainAll() instead
+func (c *Client) SearchTrain(dep, arr, date, time string) ([]*Train, error) {
+	// TODO filtering
+	return c.SearchTrainAll(dep, arr, date, time)
+}
+
+// SearchTrainAll is used to search *all* trains including trains with no seats
+func (c *Client) SearchTrainAll(dep, arr, date, time string) ([]*Train, error) {
+	if !c.isLogin {
+		return nil, errors.New("Not Loggin In")
+	}
+
+	depCode, ok := stationCode[dep]
+	if !ok {
+		return nil, fmt.Errorf("Station `%s` Not Exists", dep)
+	}
+	arrCode, ok := stationCode[arr]
+	if !ok {
+		return nil, fmt.Errorf("Station `%s` Not Exists", arr)
+	}
+
+	resp, err := c.httpClient.R().
+		SetFormData(map[string]string{
+			// course (1: 직통, 2: 환승, 3: 왕복)
+			// TODO: support 환승, 왕복
+			"chtnDvCd":   "1",
+			"arriveTime": "N",
+			"seatAttCd":  "015",
+			// 검색 시에는 1명 기준으로 검색
+			"psgNum":  "1",
+			"trnGpCd": "109",
+			// train type (05: 전체, 17: SRT)
+			"stlbTrnClsfCd": "05",
+			// departure date
+			"dptDt": date,
+			// departure time
+			"dptTm": time,
+			// arrival station code
+			"arvRsStnCd": arrCode,
+			// departure station code
+			"dptRsStnCd": depCode,
+		}).
+		Post(srtSearchScheduleURL)
+
+	if err != nil {
+		return nil, err
+	}
+
+	parser := &responseParser{}
+	err = parser.Parse(resp.Body())
+
+	if err != nil {
+		return nil, err
+	}
+	if !parser.Success() {
+		c.debug(string(resp.Body()))
+		return nil, errors.New("Response Parsing Failed")
+	}
+
+	trainsData := parser.
+		Data()["outDataSets"].(map[string]interface{})["dsOutput1"].([]map[string]string)
+
+	toTrain := func(t map[string]string) *Train {
+		return &Train{
+			trainCode:        t["stlbTrnClsfCd"],
+			trainName:        trainName[t["stlbTrnClsfCd"]],
+			trainNumber:      t["trnNo"],
+			depDate:          t["dptDt"],
+			depTime:          t["dtpTm"],
+			depStationCode:   t["dptRsStnCd"],
+			depStationName:   stationName[t["dptRsStnCd"]],
+			arrDate:          t["arvDt"],
+			arrTime:          t["arvTm"],
+			arrStationCode:   t["arvRsStnCd"],
+			arrStationName:   stationName[t["arvRsStnCd"]],
+			generalSeatState: t["gnrmRsvPsbStr"],
+			specialSeatState: t["sprmRsvPsbStr"],
+		}
+	}
+
+	trains := make([]*Train, 0)
+	for _, t := range trainsData {
+		trains = append(trains, toTrain(t))
+	}
+
+	// TODO: pagination
+
+	return trains, nil
 }
 
 // Reserve is used to reserve SRT train
