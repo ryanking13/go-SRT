@@ -107,7 +107,7 @@ func (c *Client) SearchTrain(dep, arr, date, depTime string) ([]*Train, error) {
 // SearchTrainAll is used to search *all* trains including trains with no seats
 func (c *Client) SearchTrainAll(dep, arr, date, depTime string) ([]*Train, error) {
 	if !c.isLogin {
-		return nil, errors.New("Not Loggin In")
+		return nil, errors.New("Not Logged In")
 	}
 
 	depCode, ok := stationCode[dep]
@@ -237,8 +237,44 @@ func (c *Client) TicketInfo() error {
 }
 
 // Cancel is used to cancel reservation
-func (c *Client) Cancel() error {
-	return errors.New("Not Implemented")
+func (c *Client) Cancel(reservation *Reservation) error {
+	return c.CancelByNumber(reservation.reservationNumber)
+}
+
+// CancelByNumber is used to cancel reservation by it's number directly
+func (c *Client) CancelByNumber(reservationNumber string) error {
+	if !c.isLogin {
+		return errors.New("Not Logged In")
+	}
+
+	formData := map[string]string{
+		"pnrNo":     reservationNumber,
+		"jrnyCnt":   "1",
+		"rsvChgTno": "0",
+	}
+
+	resp, err := c.httpClient.R().
+		SetFormData(formData).
+		Post(srtCancelURL)
+
+	if err != nil {
+		return err
+	}
+
+	parser := &responseParser{}
+	err = parser.Parse(resp.Body())
+
+	if err != nil {
+		return err
+	}
+	if !parser.Success() {
+		c.debug(string(resp.Body()))
+		return errors.New("Response Parsing Failed")
+	}
+
+	c.debug(parser.String())
+
+	return nil
 }
 
 // SetDebug is used to change SRT Client logger setting to print all debug logs
