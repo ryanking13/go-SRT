@@ -44,10 +44,10 @@ const (
 
 const (
 	passengerAdult          = "1"
-	passengerDisability1To3 = "2"
-	passengerDisability4To6 = "3"
 	passengerSenior         = "4"
 	passengerChild          = "5"
+	passengerDisability1To3 = "2"
+	passengerDisability4To6 = "3"
 )
 
 var (
