@@ -146,29 +146,29 @@ func (c *Client) SearchTrainAll(dep, arr, date, time string) ([]*Train, error) {
 	}
 
 	trainsData := parser.
-		Data()["outDataSets"].(map[string]interface{})["dsOutput1"].([]map[string]string)
+		Data()["outDataSets"].(map[string]interface{})["dsOutput1"].([]interface{})
 
-	toTrain := func(t map[string]string) *Train {
+	toTrain := func(t map[string]interface{}) *Train {
 		return &Train{
-			trainCode:        t["stlbTrnClsfCd"],
-			trainName:        trainName[t["stlbTrnClsfCd"]],
-			trainNumber:      t["trnNo"],
-			depDate:          t["dptDt"],
-			depTime:          t["dtpTm"],
-			depStationCode:   t["dptRsStnCd"],
-			depStationName:   stationName[t["dptRsStnCd"]],
-			arrDate:          t["arvDt"],
-			arrTime:          t["arvTm"],
-			arrStationCode:   t["arvRsStnCd"],
-			arrStationName:   stationName[t["arvRsStnCd"]],
-			generalSeatState: t["gnrmRsvPsbStr"],
-			specialSeatState: t["sprmRsvPsbStr"],
+			trainCode:        t["stlbTrnClsfCd"].(string),
+			trainName:        trainName[t["stlbTrnClsfCd"].(string)],
+			trainNumber:      t["trnNo"].(string),
+			depDate:          t["dptDt"].(string),
+			depTime:          t["dptTm"].(string),
+			depStationCode:   t["dptRsStnCd"].(string),
+			depStationName:   stationName[t["dptRsStnCd"].(string)],
+			arrDate:          t["arvDt"].(string),
+			arrTime:          t["arvTm"].(string),
+			arrStationCode:   t["arvRsStnCd"].(string),
+			arrStationName:   stationName[t["arvRsStnCd"].(string)],
+			generalSeatState: t["gnrmRsvPsbStr"].(string),
+			specialSeatState: t["sprmRsvPsbStr"].(string),
 		}
 	}
 
 	trains := make([]*Train, 0)
 	for _, t := range trainsData {
-		trains = append(trains, toTrain(t))
+		trains = append(trains, toTrain(t.(map[string]interface{})))
 	}
 
 	// TODO: pagination

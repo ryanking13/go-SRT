@@ -50,10 +50,11 @@ func TestSRT(t *testing.T) {
 	})
 
 	t.Run("SearchTrain Test", func(t *testing.T) {
-		_, err := client.SearchTrainAll("수서", "부산", today(), "000000")
+		trains, err := client.SearchTrainAll("수서", "부산", today(), "000000")
 		if err != nil {
 			t.Errorf("SRT SearchTrain Failed: %s", err.Error())
 		}
+		t.Log(trains)
 	})
 
 	t.Run("Reserve Test", func(t *testing.T) {
