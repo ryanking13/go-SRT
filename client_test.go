@@ -1,10 +1,10 @@
 package srt_test
 
 import (
-	"os"
-	"time"
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	srt "github.com/ryanking13/go-SRT"
 )

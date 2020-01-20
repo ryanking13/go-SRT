@@ -89,7 +89,19 @@ func (c *Client) Logout() error {
 // if you want to retrieve trains with no seats as well, Use SearchTrainAll() instead
 func (c *Client) SearchTrain(dep, arr, date, depTime string) ([]*Train, error) {
 	// TODO filtering
-	return c.SearchTrainAll(dep, arr, date, depTime)
+	trains, err := c.SearchTrainAll(dep, arr, date, depTime)
+
+	if err != nil {
+		return nil, err
+	}
+
+	trainsAvailable := make([]*Train, 0)
+	for _, train := range trains {
+		if train.SeatsAvailable() {
+			trainsAvailable = append(trainsAvailable, train)
+		}
+	}
+	return trainsAvailable, nil
 }
 
 // SearchTrainAll is used to search *all* trains including trains with no seats
