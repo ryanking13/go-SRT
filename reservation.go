@@ -15,6 +15,18 @@ type Ticket struct {
 	discount          string
 }
 
+func (t *Ticket) String() string {
+	return fmt.Sprintf(
+		"%s호차 %s (%s) %s [%s원(%s원 할인)]",
+		t.car,
+		t.seat,
+		t.seatType,
+		t.passengerType,
+		t.price,
+		t.discount,
+	)
+}
+
 // Reservation represents a reservation of SRT train.
 // Reservation consists of train information and multiple Tickets
 type Reservation struct {
@@ -34,18 +46,6 @@ type Reservation struct {
 	paymentDate       string
 	paymentTime       string
 	tickets           []*Ticket
-}
-
-func (t *Ticket) String() string {
-	return fmt.Sprintf(
-		"%s호차 %s (%s) %s [%s원(%s원 할인)]",
-		t.car,
-		t.seat,
-		t.seatType,
-		t.passengerType,
-		t.price,
-		t.discount,
-	)
 }
 
 func (r *Reservation) String() string {

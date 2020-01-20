@@ -3,6 +3,7 @@ package srt
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 func reverseMap(m map[string]string) map[string]string {
@@ -12,6 +13,11 @@ func reverseMap(m map[string]string) map[string]string {
 	}
 
 	return _m
+}
+
+func today() string {
+	t := time.Now()
+	return fmt.Sprintf("%d%02d%02d", t.Year(), t.Month(), t.Day())
 }
 
 // tick one second (HHMMSS --> HHMMSS + 1 sec)

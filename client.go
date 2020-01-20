@@ -84,39 +84,164 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-// SearchTrain is used to search trains from SRT server,
-// SearchTrain returns *only* available seats,
-// if you want to retrieve trains with no seats as well, Use SearchTrainAll() instead
-func (c *Client) SearchTrain(dep, arr, date, depTime string) ([]*Train, error) {
-	// TODO filtering
-	trains, err := c.SearchTrainAll(dep, arr, date, depTime)
+// // SearchTrain is used to search trains from SRT server,
+// // SearchTrain returns *only* available seats,
+// // if you want to retrieve trains with no seats as well, Use SearchTrainAll() instead
+// func (c *Client) SearchTrain(dep, arr, date, depTime string) ([]*Train, error) {
+// 	// TODO filtering
+// 	trains, err := c.SearchTrainAll(dep, arr, date, depTime)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	trainsAvailable := make([]*Train, 0)
-	for _, train := range trains {
-		if train.SeatsAvailable() {
-			trainsAvailable = append(trainsAvailable, train)
-		}
-	}
-	return trainsAvailable, nil
-}
+// 	trainsAvailable := make([]*Train, 0)
+// 	for _, train := range trains {
+// 		if train.SeatsAvailable() {
+// 			trainsAvailable = append(trainsAvailable, train)
+// 		}
+// 	}
+// 	return trainsAvailable, nil
+// }
 
-// SearchTrainAll is used to search *all* trains including trains with no seats
-func (c *Client) SearchTrainAll(dep, arr, date, depTime string) ([]*Train, error) {
+// // SearchTrainAll is used to search *all* trains including trains with no seats
+// func (c *Client) SearchTrainAll(dep, arr, date, depTime string) ([]*Train, error) {
+// 	if !c.isLogin {
+// 		return nil, errors.New("Not Logged In")
+// 	}
+
+// 	depCode, ok := stationCode[dep]
+// 	if !ok {
+// 		return nil, fmt.Errorf("Station `%s` Not Exists", dep)
+// 	}
+// 	arrCode, ok := stationCode[arr]
+// 	if !ok {
+// 		return nil, fmt.Errorf("Station `%s` Not Exists", arr)
+// 	}
+
+// 	formData := map[string]string{
+// 		// course (1: 직통, 2: 환승, 3: 왕복)
+// 		// TODO: support 환승, 왕복
+// 		"chtnDvCd":   "1",
+// 		"arriveTime": "N",
+// 		"seatAttCd":  "015",
+// 		// 검색 시에는 1명 기준으로 검색
+// 		"psgNum":  "1",
+// 		"trnGpCd": "109",
+// 		// train type (05: 전체, 17: SRT)
+// 		"stlbTrnClsfCd": "05",
+// 		// departure date
+// 		"dptDt": date,
+// 		// departure time
+// 		"dptTm": depTime,
+// 		// arrival station code
+// 		"arvRsStnCd": arrCode,
+// 		// departure station code
+// 		"dptRsStnCd": depCode,
+// 	}
+
+// 	resp, err := c.httpClient.R().
+// 		SetFormData(formData).
+// 		Post(srtSearchScheduleURL)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	parser := &responseParser{}
+// 	err = parser.Parse(resp.Body())
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	if !parser.Success() {
+// 		c.debug(string(resp.Body()))
+// 		return nil, errors.New("Response Parsing Failed")
+// 	}
+
+// 	trainsData := parser.
+// 		Data()["outDataSets"].(map[string]interface{})["dsOutput1"].([]interface{})
+
+// 	toTrain := func(t map[string]interface{}) *Train {
+// 		return &Train{
+// 			trainCode:        t["stlbTrnClsfCd"].(string),
+// 			trainName:        trainName[t["stlbTrnClsfCd"].(string)],
+// 			trainNumber:      t["trnNo"].(string),
+// 			depDate:          t["dptDt"].(string),
+// 			depTime:          t["dptTm"].(string),
+// 			depStationCode:   t["dptRsStnCd"].(string),
+// 			depStationName:   stationName[t["dptRsStnCd"].(string)],
+// 			arrDate:          t["arvDt"].(string),
+// 			arrTime:          t["arvTm"].(string),
+// 			arrStationCode:   t["arvRsStnCd"].(string),
+// 			arrStationName:   stationName[t["arvRsStnCd"].(string)],
+// 			generalSeatState: t["gnrmRsvPsbStr"].(string),
+// 			specialSeatState: t["sprmRsvPsbStr"].(string),
+// 		}
+// 	}
+
+// 	trains := make([]*Train, 0)
+// 	for _, t := range trainsData {
+// 		trains = append(trains, toTrain(t.(map[string]interface{})))
+// 	}
+
+// 	// Note: updated api uses pagination,
+// 	//      therefore, to retreive all trains, retry searching unless there are no more trains
+// 	for len(trains) > 0 {
+// 		nextDepTime := tickSecond(trains[len(trains)-1].depTime)
+// 		formData["dptTm"] = nextDepTime
+
+// 		resp, err := c.httpClient.R().
+// 			SetFormData(formData).
+// 			Post(srtSearchScheduleURL)
+
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		parser := &responseParser{}
+// 		err = parser.Parse(resp.Body())
+
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		if !parser.Success() {
+// 			break
+// 		}
+
+// 		trainsData := parser.
+// 			Data()["outDataSets"].(map[string]interface{})["dsOutput1"].([]interface{})
+
+// 		for _, t := range trainsData {
+// 			trains = append(trains, toTrain(t.(map[string]interface{})))
+// 		}
+// 	}
+
+// 	return trains, nil
+// }
+
+// SearchTrain is used to search trains from SRT server
+func (c *Client) SearchTrain(params *SearchParams) ([]*Train, error) {
 	if !c.isLogin {
 		return nil, errors.New("Not Logged In")
 	}
 
-	depCode, ok := stationCode[dep]
-	if !ok {
-		return nil, fmt.Errorf("Station `%s` Not Exists", dep)
+	if params.Date == "" {
+		params.Date = today()
 	}
-	arrCode, ok := stationCode[arr]
+
+	if params.Time == "" {
+		params.Time = "000000"
+	}
+
+	depCode, ok := stationCode[params.Dep]
 	if !ok {
-		return nil, fmt.Errorf("Station `%s` Not Exists", arr)
+		return nil, fmt.Errorf("Station `%s` Not Exists", params.Dep)
+	}
+	arrCode, ok := stationCode[params.Arr]
+	if !ok {
+		return nil, fmt.Errorf("Station `%s` Not Exists", params.Arr)
 	}
 
 	formData := map[string]string{
@@ -131,9 +256,9 @@ func (c *Client) SearchTrainAll(dep, arr, date, depTime string) ([]*Train, error
 		// train type (05: 전체, 17: SRT)
 		"stlbTrnClsfCd": "05",
 		// departure date
-		"dptDt": date,
+		"dptDt": params.Date,
 		// departure time
-		"dptTm": depTime,
+		"dptTm": params.Time,
 		// arrival station code
 		"arvRsStnCd": arrCode,
 		// departure station code
@@ -218,22 +343,215 @@ func (c *Client) SearchTrainAll(dep, arr, date, depTime string) ([]*Train, error
 		}
 	}
 
+	if !params.IncludeSoldOut {
+		trainsAvailable := make([]*Train, 0)
+		for _, train := range trains {
+			if train.SeatsAvailable() {
+				trainsAvailable = append(trainsAvailable, train)
+			}
+		}
+		return trainsAvailable, nil
+	}
+
 	return trains, nil
 }
 
 // Reserve is used to reserve SRT train
-func (c *Client) Reserve() error {
-	return errors.New("Not Implemented")
+func (c *Client) Reserve(r *ReserveParams) (*Reservation, error) {
+	if !c.isLogin {
+		return nil, errors.New("Not Logged In")
+	}
+
+	if r.Train.trainName != "SRT" {
+		return nil, fmt.Errorf("SRT is expected for a train name, %s given", r.Train.trainName)
+	}
+
+	if r.Passengers == nil {
+		r.Passengers = []*Passenger{Adult(1)}
+	}
+
+	formData := map[string]string{
+		"reserveType":    "11",
+		"jobId":          "1101", // 개인 예약
+		"jrnyCnt":        "1",
+		"jrnyTpCd":       "11",
+		"jrnySqno1":      "001",
+		"stndFlg":        "N",
+		"trnGpCd1":       "300", // 열차그룹코드 (좌석선택은 SRT만 가능하기때문에 무조건 300을 셋팅한다)
+		"stlbTrnClsfCd1": r.Train.trainCode,
+		"dptDt1":         r.Train.depDate,
+		"dptTm1":         r.Train.depTime,
+		"runDt1":         r.Train.depDate,
+		"trnNo1":         fmt.Sprintf("%05s", r.Train.trainNumber),
+		"dptRsStnCd1":    r.Train.depStationCode,
+		"dptRsStnCdNm1":  r.Train.depStationName,
+		"arvRsStnCd1":    r.Train.arrStationCode,
+		"arvRsStnCdNm1":  r.Train.arrStationName,
+	}
+
+	for k, v := range passengers2Params(r.Passengers, r.SpecialSeatOnly) {
+		formData[k] = v
+	}
+
+	resp, err := c.httpClient.R().
+		SetFormData(formData).
+		Post(srtReserveURL)
+
+	if err != nil {
+		return nil, err
+	}
+
+	parser := &responseParser{}
+	err = parser.Parse(resp.Body())
+
+	if err != nil {
+		return nil, err
+	}
+	if !parser.Success() {
+		c.debug(string(resp.Body()))
+		return nil, errors.New("Response Parsing Failed")
+	}
+
+	dupMsg := "요청하신 승차권과 동일한 시간대에 예약 또는 발권하신 승차권이 존재합니다."
+	if strings.Contains(parser.String(), dupMsg) {
+		c.log("WARNING: 이미 같은 시간대의 예약이 존재합니다. 중복 예약되었습니다.")
+	}
+
+	c.debug(parser.String())
+
+	reservationNo := parser.Data()["reservListMap"].([]interface{})[0].(map[string]interface{})["pnrNo"].(string)
+	reservations, err := c.Reservations()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, reservation := range reservations {
+		if reservation.reservationNumber == reservationNo {
+			return reservation, nil
+		}
+	}
+
+	return nil, errors.New("Ticket not found: check reservation status")
 }
 
 // Reservations is used to retrieve your SRT reservations
-func (c *Client) Reservations() error {
-	return errors.New("Not Implemented")
+func (c *Client) Reservations() ([]*Reservation, error) {
+	if !c.isLogin {
+		return nil, errors.New("Not Logged In")
+	}
+
+	formData := map[string]string{
+		"pageNo": "0",
+	}
+
+	resp, err := c.httpClient.R().
+		SetFormData(formData).
+		Post(srtReservationsURL)
+
+	if err != nil {
+		return nil, err
+	}
+
+	parser := &responseParser{}
+	err = parser.Parse(resp.Body())
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !parser.Success() {
+		c.debug(string(resp.Body()))
+		return nil, errors.New("Response Parsing Failed")
+	}
+
+	trainData := parser.Data()["trainListMap"].([]interface{})
+	payData := parser.Data()["payListMap"].([]interface{})
+	reservations := make([]*Reservation, 0)
+
+	for i, _train := range trainData {
+		train := _train.(map[string]interface{})
+		pay := payData[i].(map[string]interface{})
+		tickets, err := c.TicketsByNumber(train["pnrNo"].(string))
+		if err != nil {
+			return nil, err
+		}
+
+		reservations = append(reservations, &Reservation{
+			reservationNumber: train["pnrNo"].(string),
+			totalCost:         fmt.Sprintf("%.0f", train["rcvdAmt"].(float64)),
+			seatCount:         fmt.Sprintf("%.0f", train["tkSpecNum"].(float64)),
+			trainCode:         pay["stlbTrnClsfCd"].(string),
+			trainName:         trainName[pay["stlbTrnClsfCd"].(string)],
+			trainNumber:       pay["trnNo"].(string),
+			depDate:           pay["dptDt"].(string),
+			depTime:           pay["dptTm"].(string),
+			depStationCode:    pay["dptRsStnCd"].(string),
+			depStationName:    stationName[pay["dptRsStnCd"].(string)],
+			arrTime:           pay["arvTm"].(string),
+			arrStationCode:    pay["arvRsStnCd"].(string),
+			arrStationName:    stationName[pay["arvRsStnCd"].(string)],
+			paymentDate:       pay["iseLmtDt"].(string),
+			paymentTime:       pay["iseLmtTm"].(string),
+			tickets:           tickets,
+		})
+	}
+	return reservations, nil
 }
 
-// TicketInfo is used to see information of the ticket
-func (c *Client) TicketInfo() error {
-	return errors.New("Not Implemented")
+// Tickets is used to see information of the reservation (reservation consists of multiple tickets)
+func (c *Client) Tickets(reservation *Reservation) ([]*Ticket, error) {
+	return c.TicketsByNumber(reservation.reservationNumber)
+}
+
+// TicketsByNumber is used to see information of the reservation by it's number directly
+func (c *Client) TicketsByNumber(reservationNumber string) ([]*Ticket, error) {
+	if !c.isLogin {
+		return nil, errors.New("Not Logged In")
+	}
+
+	formData := map[string]string{
+		"pnrNo":    reservationNumber,
+		"jrnySqno": "1",
+	}
+
+	resp, err := c.httpClient.R().
+		SetFormData(formData).
+		Post(srtTicketInfoURL)
+
+	if err != nil {
+		return nil, err
+	}
+
+	parser := &responseParser{}
+	err = parser.Parse(resp.Body())
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !parser.Success() {
+		return nil, errors.New("Response Parsing Failed")
+	}
+
+	tickets := make([]*Ticket, 0)
+	_ticketList := parser.Data()["trainListMap"].([]interface{})
+	for _, ticket := range _ticketList {
+		t := ticket.(map[string]interface{})
+		tickets = append(tickets, &Ticket{
+			car:               fmt.Sprintf("%.0f", t["scarNo"].(float64)),
+			seat:              t["seatNo"].(string),
+			seatTypeCode:      t["psrmClCd"].(string),
+			seatType:          seatType[t["psrmClCd"].(string)],
+			passengerTypeCode: t["psgTpCd"].(string),
+			passengerType:     passengerType[t["psgTpCd"].(string)],
+			price:             strings.TrimLeft(t["rcvdAmt"].(string), "0"),
+			originalPrice:     strings.TrimLeft(t["stdrPrc"].(string), "0"),
+			discount:          strings.TrimLeft(t["dcntPrc"].(string), "0"),
+		})
+	}
+
+	return tickets, nil
 }
 
 // Cancel is used to cancel reservation
