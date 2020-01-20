@@ -76,7 +76,8 @@ func TestSRT(t *testing.T) {
 		t.Log(trains)
 
 		reserveParams := &srt.ReserveParams{
-			Train: trains[len(trains)-1],
+			Train:      trains[len(trains)-1],
+			Passengers: []*srt.Passenger{srt.Adult(2), srt.Child(1)},
 		}
 
 		reservation, err := client.Reserve(reserveParams)
