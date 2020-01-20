@@ -1,16 +1,21 @@
 package srt_test
 
 import (
-	"os"
-	"time"
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	srt "github.com/ryanking13/go-SRT"
 )
 
 func today() string {
 	t := time.Now()
+	return fmt.Sprintf("%d%02d%02d", t.Year(), t.Month(), t.Day())
+}
+
+func tomorrow() string {
+	t := time.Now().AddDate(0, 0, 1)
 	return fmt.Sprintf("%d%02d%02d", t.Year(), t.Month(), t.Day())
 }
 
@@ -22,7 +27,7 @@ func TestSRT(t *testing.T) {
 	username := os.Getenv("SRT_USERNAME")
 	password := os.Getenv("SRT_PASSWORD")
 
-	t.Run("Username, Password Check", func(t *testing.T) {
+	t.Run("Username/Password Check", func(t *testing.T) {
 		if username == "" || password == "" {
 			t.Error("SRT_USERNAME or SRT_PASSWORD not set")
 		}
@@ -49,39 +54,56 @@ func TestSRT(t *testing.T) {
 		}
 	})
 
-	t.Run("SearchTrain Test", func(t *testing.T) {
-		trains, err := client.SearchTrainAll("수서", "부산", today(), "000000")
+	t.Run("Search/Reserve/Cancel Test", func(t *testing.T) {
+		defer func() {
+			t.Log("Clean Up")
+			reservations, _ := client.Reservations()
+			for _, r := range reservations {
+				client.Cancel(r)
+			}
+		}()
+
+		searchParams := &srt.SearchParams{
+			Dep:  "수서",
+			Arr:  "부산",
+			Date: tomorrow(),
+		}
+		trains, err := client.SearchTrain(searchParams)
 		if err != nil {
 			t.Errorf("SRT SearchTrain Failed: %s", err.Error())
+			return
 		}
 		t.Log(trains)
-	})
 
-	t.Run("Reserve Test", func(t *testing.T) {
-		err := client.Reserve()
+		reserveParams := &srt.ReserveParams{
+			Train: trains[len(trains)-1],
+		}
+
+		reservation, err := client.Reserve(reserveParams)
 		if err != nil {
 			t.Errorf("SRT Reserve Failed: %s", err.Error())
+			return
 		}
-	})
+		t.Log(reservation)
 
-	t.Run("Reservations Test", func(t *testing.T) {
-		err := client.Reservations()
+		reservations, err := client.Reservations()
 		if err != nil {
 			t.Errorf("SRT Reservations Failed: %s", err.Error())
+			return
 		}
-	})
+		t.Log(reservations)
 
-	t.Run("TicketInfo Test", func(t *testing.T) {
-		err := client.TicketInfo()
+		tickets, err := client.Tickets(reservations[0])
 		if err != nil {
-			t.Errorf("SRT TicketInfo Failed: %s", err.Error())
+			t.Errorf("SRT Tickets Failed: %s", err.Error())
+			return
 		}
-	})
+		t.Log(tickets)
 
-	t.Run("Cancel Test", func(t *testing.T) {
-		err := client.Cancel()
+		err = client.Cancel(reservations[0])
 		if err != nil {
 			t.Errorf("SRT Cancel Failed: %s", err.Error())
+			return
 		}
 	})
 

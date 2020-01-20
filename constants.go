@@ -19,7 +19,7 @@ var (
 	srtLogoutURL         = srtMobile + "/neo/login/loginOut.do"
 	srtSearchScheduleURL = srtMobile + "/neo/ara/selectListAra10007_n.do"
 	srtReserveURL        = srtMobile + "/neo/arc/selectListArc05013_n.do"
-	srtTicketsURL        = srtMobile + "/neo/atc/selectListAtc14016_n.do"
+	srtReservationsURL   = srtMobile + "/neo/atc/selectListAtc14016_n.do"
 	srtTicketInfoURL     = srtMobile + "/neo/ard/selectListArd02017_n.do"
 	srtCancelURL         = srtMobile + "/neo/ard/selectListArd02045_n.do"
 )
@@ -40,6 +40,14 @@ const (
 	loginTypeID    = "1"
 	loginTypeEmail = "2"
 	loginTypePhone = "3"
+)
+
+const (
+	passengerAdult          = "1"
+	passengerDisability1To3 = "2"
+	passengerDisability4To6 = "3"
+	passengerSenior         = "4"
+	passengerChild          = "5"
 )
 
 var (
@@ -75,5 +83,18 @@ var (
 		"08": "ITX-새마을",
 		"09": "ITX-청춘",
 		"17": "SRT",
+	}
+
+	seatType map[string]string = map[string]string{
+		"1": "일반실",
+		"2": "특실",
+	}
+
+	passengerType map[string]string = map[string]string{
+		passengerAdult:          "어른/청소년",
+		passengerDisability1To3: "장애 1~3급",
+		passengerDisability4To6: "장애 4~6급",
+		passengerSenior:         "경로",
+		passengerChild:          "어린이",
 	}
 )
