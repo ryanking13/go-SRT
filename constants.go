@@ -76,4 +76,17 @@ var (
 		"09": "ITX-청춘",
 		"17": "SRT",
 	}
+
+	seatType map[string]string = map[string]string{
+		"1": "일반실",
+		"2": "특실",
+	}
+
+	passengerType map[string]string = map[string]string{
+		"1": "어른/청소년",
+		"2": "장애 1~3급",
+		"3": "장애 4~6급",
+		"4": "경로",
+		"5": "어린이",
+	}
 )
