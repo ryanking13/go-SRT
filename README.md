@@ -131,6 +131,8 @@ Check [srt-reserve](https://github.com/ryanking13/go-SRT/tree/master/cmd/srt-res
 
 `srt-reserve` is a CLI application for SRT ticketing.
 
+You can also download Windows binary from [Release](https://github.com/ryanking13/go-SRT/releases) section.
+
 ```sh
 go get -u github.com/ryanking13/go-SRT/...
 
