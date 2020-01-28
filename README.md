@@ -46,16 +46,16 @@ Attributes of `srt.SearchParams`:
 - IncludeSoldOut: (optional) (default: False) include trains which are sold out 
 
 ```go
-	trains, err := client.SearchTrain(&srt.SearchParams{
-		Dep:            "수서",
-		Arr:            "부산",
-		Date:           "20200128",
-		Time:           "144000",
-		IncludeSoldOut: false,
-	})
-	if err != nil {
-		panic(err)
-	}
+trains, err := client.SearchTrain(&srt.SearchParams{
+    Dep:            "수서",
+    Arr:            "부산",
+    Date:           "20200128",
+    Time:           "144000",
+    IncludeSoldOut: false,
+})
+if err != nil {
+    panic(err)
+}
 ```
 
 ### 3. Making a reservation
@@ -68,19 +68,19 @@ Attributes of `srt.ReserveParams`:
 - Passengers (optional, default is one Adult)
 
 ```go
-    // ...
-    // trains, _ := client.SearchTrain(...)
-	reservation, err := client.Reserve(&srt.ReserveParams{
-		Train:      trains[0],
-		Passengers: []*srt.Passenger{srt.Adult(2), srt.Child(1)},
-	})
+// ...
+// trains, _ := client.SearchTrain(...)
+reservation, err := client.Reserve(&srt.ReserveParams{
+    Train:      trains[0],
+    Passengers: []*srt.Passenger{srt.Adult(2), srt.Child(1)},
+})
 
-	if err != nil {
-		panic(err)
-    }
-    
-    fmt.Println(reservation)
-    // [SRT] 02월 10일, 수서~부산(15:00~17:34) 129700원(3석), 구입기한 01월 28일 16:40
+if err != nil {
+    panic(err)
+}
+
+fmt.Println(reservation)
+// [SRT] 02월 10일, 수서~부산(15:00~17:34) 129700원(3석), 구입기한 01월 28일 16:40
 ```
 
 #### Passenger
@@ -98,14 +98,14 @@ __WARNING: 충분히 테스트되지 않음__
 Use `Reservations` method.
 
 ```go
-    // ...
-    reservations, err := client.Reservations()
-	for _, r := range reservations {
-		fmt.Println(r)
-    }
-    
-    // [SRT] 02월 10일, 수서~부산(15:00~17:34) 129700원(3석), 구입기한 01월 28일 16:40
-    // ...
+// ...
+reservations, err := client.Reservations()
+for _, r := range reservations {
+    fmt.Println(r)
+}
+
+// [SRT] 02월 10일, 수서~부산(15:00~17:34) 129700원(3석), 구입기한 01월 28일 16:40
+// ...
 ```
 
 ### 5. Canceling reservation
@@ -113,16 +113,16 @@ Use `Reservations` method.
 Use `Cancel` method.
 
 ```go
-	reservation, err := client.Reserve(&srt.ReserveParams{
-		Train:      trains[0],
-		Passengers: []*srt.Passenger{srt.Adult(2), srt.Child(1)},
-    })
-    client.Cancel(reservation)
-    
-    // OR
-    
-    reservations, err := client.Reservations()
-	client.Cancel(reservations[0])
+reservation, err := client.Reserve(&srt.ReserveParams{
+    Train:      trains[0],
+    Passengers: []*srt.Passenger{srt.Adult(2), srt.Child(1)},
+})
+client.Cancel(reservation)
+
+// OR
+
+reservations, err := client.Reservations()
+client.Cancel(reservations[0])
 ```
 
 ## Example
