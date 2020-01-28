@@ -125,6 +125,18 @@ Use `Cancel` method.
 	client.Cancel(reservations[0])
 ```
 
+## Example
+
+Check [srt-reserve](https://github.com/ryanking13/go-SRT/tree/master/cmd/srt-reserve) for sample Usage.
+
+`srt-reserve` is a CLI application for SRT ticketing.
+
+```sh
+go get -u github.com/ryanking13/go-SRT/...
+
+srt-reserve
+```
+
 ## TODO
 
 - Add tests for CI
