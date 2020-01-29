@@ -139,6 +139,8 @@ go get -u github.com/ryanking13/go-SRT/...
 srt-reserve
 ```
 
+![srt-reserve-sample](./srt-reserve.gif)
+
 ## TODO
 
 - Add tests for CI
