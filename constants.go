@@ -14,14 +14,14 @@ const (
 var srtMobile string = fmt.Sprintf("%s://%s:%d", srtScheme, srtHost, srtPort)
 
 var (
-	srtMainURL           = srtMobile + "/neo/main/main.do"
-	srtLoginURL          = srtMobile + "/neo/apb/selectListApb01080_n.do"
-	srtLogoutURL         = srtMobile + "/neo/login/loginOut.do"
-	srtSearchScheduleURL = srtMobile + "/neo/ara/selectListAra10007_n.do"
-	srtReserveURL        = srtMobile + "/neo/arc/selectListArc05013_n.do"
-	srtReservationsURL   = srtMobile + "/neo/atc/selectListAtc14016_n.do"
-	srtTicketInfoURL     = srtMobile + "/neo/ard/selectListArd02017_n.do"
-	srtCancelURL         = srtMobile + "/neo/ard/selectListArd02045_n.do"
+	srtMainURL           = srtMobile + "/main/main.do"
+	srtLoginURL          = srtMobile + "/apb/selectListApb01080_n.do"
+	srtLogoutURL         = srtMobile + "/login/loginOut.do"
+	srtSearchScheduleURL = srtMobile + "/ara/selectListAra10007_n.do"
+	srtReserveURL        = srtMobile + "/arc/selectListArc05013_n.do"
+	srtReservationsURL   = srtMobile + "/atc/selectListAtc14016_n.do"
+	srtTicketInfoURL     = srtMobile + "/ard/selectListArd02017_n.do"
+	srtCancelURL         = srtMobile + "/ard/selectListArd02045_n.do"
 )
 
 var (
