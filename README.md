@@ -1,5 +1,7 @@
 # go-SRT
 
+**DISCLAIMER: This repository is not actively maintained, some APIs might not work. Please check [SRT](https://github.com/ryanking13/SRT) if you need WORKING library.**
+
 SRT(Super Rapid Train) application golang wrapper
 
 This project was inspired from [korail2](https://github.com/carpedm20/korail2) of [carpedm20](https://github.com/carpedm20) and [SRT](https://github.com/ryanking13/SRT) of myself.
